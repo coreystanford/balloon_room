@@ -5,10 +5,12 @@ var balloons = (function(){
 	Physijs.scripts.worker = 'js/physijs_worker.js';
 	Physijs.scripts.ammo = 'ammo.js';
 
-	var scene = new Physijs.Scene({ fixedTimeStep: 1 / 120 }),
+	var scene = new Physijs.Scene({ fixedTimeStep: 1 / 120 }), stats,
 	initEventHandling,
 	renderer = window.WebGLRenderingContext ?  new THREE.WebGLRenderer({ antialias: true }) : new THREE.CanvasRenderer(),
 	clock = new THREE.Clock(),
+	mouseX = 0, mouseY = 0,
+	windowHalfX = window.innerWidth / 2, windowHalfY = window.innerHeight / 2,
 	light1, light2, light3,
 	camera,
 	balloon,
@@ -19,6 +21,12 @@ var balloons = (function(){
 	function initScene(){
 
 		scene.setGravity(new THREE.Vector3(0,30,0));
+
+		stats = new Stats();
+		stats.domElement.style.position = 'absolute';
+		stats.domElement.style.top = '0px';
+		stats.domElement.style.zIndex = 100;
+		document.getElementById('balloon-container').appendChild( stats.domElement );
 
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.shadowMapEnabled = true;
@@ -42,7 +50,7 @@ var balloons = (function(){
 		floor = createWall(floor, "floor", 0, 90, 0, 0, -15, 0, 40, 50, false, 1);
 		behind = createWall(behind, "behind", 90, 0, 0, 0, 0, 20, 40, 30, true, 0);
 
-		light1 = new THREE.PointLight(new THREE.Color("#ffffff", .5, 50, 180 * Math.PI / 180));
+		light1 = new THREE.SpotLight(new THREE.Color("#ffffff", .5, 50, 180 * Math.PI / 180));
 		light1.position.set(113,87,63);
 		light1.castShadow = true;
 		scene.add(light1);
@@ -55,7 +63,9 @@ var balloons = (function(){
 		light3.castShadow = true;
 		scene.add(light3);
 
-		makeBalloons(30);
+		makeBalloons(20);
+
+		document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
 		render();
 
@@ -129,18 +139,23 @@ var balloons = (function(){
 				balloon.position.x = coords.xRand;
 				balloon.position.z = coords.zRand;
 				console.log(balloon.position);
-				// balloon.setAngularVelocity(new THREE.Vector3(0,-10,50));
+				balloon.setAngularVelocity(new THREE.Vector3(0,-10,50));
 
 				balloon.name = "balloon"+i;
 				balloon.castShadow = true;
-
-				requestAnimationFrame(render);
 
 				scene.add(balloon);
 
 			};
 
 		});
+
+	}
+
+	function onDocumentMouseMove(event) {
+
+		mouseX = ( event.clientX - windowHalfX ) / 90;
+		mouseY = ( event.clientY - windowHalfY ) / 90;
 
 	}
 
@@ -161,8 +176,14 @@ var balloons = (function(){
 
 	function render(){
 		scene.simulate();
+
+		camera.position.x += ( mouseX - camera.position.x ) * .05;
+		camera.position.y += ( - mouseY - camera.position.y ) * .05;
+		camera.lookAt( scene.position );
+
 		renderer.render(scene, camera);
 		requestAnimationFrame(render);
+		stats.update();
 	}
 
 	function loadGUI(){
