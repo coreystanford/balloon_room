@@ -31,48 +31,52 @@ var balloons = (function(){
 		             0.1,
 		             100
 		             );
-		camera.setLens(35, 35);
-		camera.position.set(0,8,40);
+		camera.setLens(40, 35);
+		camera.position.set(0,5,40);
 		scene.add(camera);
 
-		back = createWall(back, "back", 90, 0, 0, 0, 0, -50, 50, 35);
-		right = createWall(right, "right", 90, 0, 90, 25, 0, 0, 100, 35);
-		left = createWall(left, "left", 90, 0, 90, -25, 0, 0, 100, 35);
-		ceiling = createWall(ceiling, "ceiling", 0, 90, 0, 0, 15, 0, 100, 50);
-		floor = createWall(floor, "floor", 0, 90, 0, 0, -15, 0, 100, 50);
-		behind = createWall(behind, "behind", 90, 0, 0, 0, 0, 50, 50, 35);
+		back = createWall(back, "back", 90, 0, 0, 0, 0, -20, 40, 30, false, 1);
+		right = createWall(right, "right", 90, 0, 90, 20, 0, 0, 40, 30, false, 1);
+		left = createWall(left, "left", 90, 0, 90, -20, 0, 0, 40, 30, false, 1);
+		ceiling = createWall(ceiling, "ceiling", 0, 90, 0, 0, 15, 0, 40, 50, false, 1);
+		floor = createWall(floor, "floor", 0, 90, 0, 0, -15, 0, 40, 50, false, 1);
+		behind = createWall(behind, "behind", 90, 0, 0, 0, 0, 20, 40, 30, true, 0);
 
-		light1 = new THREE.DirectionalLight(new THREE.Color("#ffffff", 30));
+		light1 = new THREE.PointLight(new THREE.Color("#ffffff", .5, 50, 180 * Math.PI / 180));
 		light1.position.set(113,87,63);
 		light1.castShadow = true;
 		scene.add(light1);
-		light2 = new THREE.DirectionalLight(new THREE.Color("#ffffff", 30));
-		light2.position.set(-113,-87,-63);
+		light2 = new THREE.SpotLight(new THREE.Color("#ffffff", 1, 250, 180 * Math.PI / 180));
+		light2.position.set(-110,-121,-16);
 		light2.castShadow = true;
 		scene.add(light2);
-		light3 = new THREE.SpotLight(new THREE.Color("#ffffff", 1, 10, 180 * Math.PI / 180));
-		light3.position.set(12,73,30);
+		light3 = new THREE.SpotLight(new THREE.Color("#ffffff", .01, 25, 180 * Math.PI / 180));
+		light3.position.set(-27,-40,34);
 		light3.castShadow = true;
 		scene.add(light3);
 
-		makeBalloons();
+		makeBalloons(30);
+
+		render();
 
 	}
 
-	function createWall(plane, name, xDegree, yDegree, zDegree, posX, posY, posZ, width, height){
-		
+	function createWall(plane, name, xDegree, yDegree, zDegree, posX, posY, posZ, width, height, transparent, opacity){
+
 		var planeMaterial = Physijs.createMaterial(
-		                    new THREE.MeshPhongMaterial({
-								color: 0xffffff,
-								shininess: 25,
-								shading: THREE.FlatShading,
-								side: THREE.DoubleSide
+		                    new THREE.MeshLambertMaterial({
+								color: 0x1ed2ed,
+								shininess: 1,
+								transparent: transparent,
+								opacity: opacity,
+								shading: THREE.SmoothShading,
+								side: THREE.FrontSide
 							}),
-							0.5, //friction
-							.8 // bounciness (aka. restitution)
+							0.4, //friction
+							.7 // bounciness (aka. restitution)
 		                );
 
-		plane = new Physijs.BoxMesh(new THREE.BoxGeometry(width, 1, height),
+		plane = new Physijs.BoxMesh(new THREE.BoxGeometry(width, .5, height),
 		            planeMaterial,
 					0 // mass (0 = immovable)
 				);
@@ -93,12 +97,12 @@ var balloons = (function(){
 		return plane;
 	}
 
-	function makeBalloons(){
+	function makeBalloons(iterations){
 
 		var loader = new THREE.JSONLoader();
-		loader.load('mesh/balloon.json', function(geometry, materials){
+		loader.load('mesh/simple_balloon.json', function(geometry, materials){
 
-			for (var i = 0; i < 5; i++) {
+			for (var i = 0; i < iterations; i++) {
 				
 				var colour = colours[Math.floor(Math.random() * colours.length)];
 
@@ -107,24 +111,24 @@ var balloons = (function(){
 					transparent: true,
 					opacity: .8,
 					side: THREE.DoubleSide
-				}), 0.1, 0.9);
+				}), 0.1, 1);
 
 				balloon = new Physijs.BoxMesh(geometry, material);
 
-				var pos = ["yRand", "xRand", "xRand"];
-				for( var xyz = 0; xyz < 2; xyz++){
+				var pos = ["yRand", "xRand", "zRand"];
+				for( var xyz = 0; xyz < 3; xyz++){
 					var posNeg = Math.random();
 					if(posNeg > 0.5){
-						coords[pos[xyz]] = Math.random() * -10;
+						coords[pos[xyz]] = Math.random() * -12;
 					} else {
-						coords[pos[xyz]] = Math.random() * 10;
+						coords[pos[xyz]] = Math.random() * 12;
 					}
 				}
 
 				balloon.position.y = coords.yRand;
 				balloon.position.x = coords.xRand;
 				balloon.position.z = coords.zRand;
-
+				console.log(balloon.position);
 				// balloon.setAngularVelocity(new THREE.Vector3(0,-10,50));
 
 				balloon.name = "balloon"+i;
@@ -135,8 +139,6 @@ var balloons = (function(){
 				scene.add(balloon);
 
 			};
-
-			render();
 
 		});
 
@@ -151,7 +153,7 @@ var balloons = (function(){
 			1
 		);
 
-		makeBalloons();
+		makeBalloons(5);
 
 		console.log(_vector);
 		
@@ -172,9 +174,9 @@ var balloons = (function(){
 		gui.add(camera.position, 'x');
 		gui.add(camera.position, 'y');
 		gui.add(camera.position, 'z');
-		gui.add(light3.position, 'x', -200, 200);
-		gui.add(light3.position, 'y', -200, 200);
-		gui.add(light3.position, 'z', -200, 200);
+		gui.add(light2.position, 'x', -500, 500);
+		gui.add(light2.position, 'y', -500, 500);
+		gui.add(light2.position, 'z', -500, 500);
 	}
 
 	window.onload = function(){
