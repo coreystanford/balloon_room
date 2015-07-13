@@ -1,5 +1,21 @@
-<h1>Home</h1>
+<h1>Wish someone a Happy Birthday!</h1>
+
+<h3>What's their first name?</h3>
 
 <input type="text" ng-model="name">
 
-<a ui-sref="room({name: name})">Preview</a>
+<button type="button" ng-click="openModal()">Get Link</button>
+
+<div ng-if="link" id="modal">
+	
+	<button type="button" ng-click="closeModal()">Close</button>
+
+	<h4>Here's the link:</h4>
+
+	<p>http://www.coreystanford.com/dev/balloons/#/{{ name }}</p>
+
+	<a ui-sref="room({name: name})">Preview</a>
+
+	<a>Copy</a>
+
+</div>

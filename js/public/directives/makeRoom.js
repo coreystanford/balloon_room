@@ -9,83 +9,25 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 
 			"use strict";
 
+			// load dependencies
 			Physijs.scripts.worker = 'js/resources/physijs_worker.js';
 			Physijs.scripts.ammo = 'ammo.js';
 
-			var scene = new Physijs.Scene({fixedTimeStep: 1/125}), stats,
-			initEventHandling,
+			var scene = new Physijs.Scene({fixedTimeStep: 1/125}), 
+			stats, // shows framerate
 			renderer = window.WebGLRenderingContext ?  new THREE.WebGLRenderer({ antialias: true }) : new THREE.CanvasRenderer(),
-			clock = new THREE.Clock(),
 			mouseX = 0, mouseY = 0,
 			windowHalfX = window.innerWidth / 2, windowHalfY = window.innerHeight / 2,
-			light1, light2, light3, light4,
+			light1, light2, light3, light4, // lights
 			camera,
-			balloon, textGeo, textMesh, textMaterial,
-			back, right, left, ceiling, floor, behind,
+			textGeo, textMesh, textMaterial, // text
+			back, right, left, ceiling, floor, behind, // walls
 			colours = [0x40ed1e, 0xed6c1e, 0x1ed2ed, 0xed1e32, 0xed1eba, 0xedeb1e],
 			coords= { yRand: 0, xRand: 0, zRand: 0 };
 
-			function initScene(){
-
-				scene.setGravity(new THREE.Vector3(0,35,0));
-
-				// stats = new Stats();
-				// stats.domElement.style.position = 'absolute';
-				// stats.domElement.style.top = '0px';
-				// stats.domElement.style.zIndex = 100;
-				// document.getElementById('balloon-container').appendChild( stats.domElement );
-
-				renderer.setSize(window.innerWidth, window.innerHeight);
-				renderer.shadowMapEnabled = true;
-
-				document.getElementById($scope.roomId).appendChild(renderer.domElement);
-
-				camera = new THREE.PerspectiveCamera(
-				             50,
-				             window.innerWidth / window.innerHeight,
-				             0.1,
-				             100
-				             );
-				camera.setLens(40, 35);
-				camera.position.set(0,0,45);
-				scene.add(camera);
-
-				back = createWall(back, "back", 90, 0, 0, 0, 0, -10, 40, 20, false, 1);
-				right = createWall(right, "right", 90, 0, 90, 20, 0, 12.5, 45, 20, false, 1);
-				left = createWall(left, "left", 90, 0, 90, -20, 0, 12.5, 45, 20, false, 1);
-				ceiling = createWall(ceiling, "ceiling", 0, 90, 0, 0, 10, 12.5, 45, 40, false, 1);
-				floor = createWall(floor, "floor", 0, 90, 0, 0, -10, 12.5, 45, 40, false, 1);
-				behind = createWall(behind, "behind", 90, 0, 0, 0, 0, 20, 40, 30, true, 0);
-
-				light1 = new THREE.PointLight(new THREE.Color("#ffffff"), 1.2);
-				light1.position.set(138,134,107);
-				light1.castShadow = false;
-				scene.add(light1);
-				light2 = new THREE.SpotLight(new THREE.Color("#ffffff", .01, 25, 10 * Math.PI / 180));
-				light2.position.set(-110,-121,0);
-				light2.castShadow = false;
-				scene.add(light2);
-				light3 = new THREE.SpotLight(new THREE.Color("#ffffff", .01, 25, 10 * Math.PI / 180));
-				light3.position.set(-19.8,-35,20);
-				light3.castShadow = false;
-				scene.add(light3);
-				light4 = new THREE.SpotLight(new THREE.Color("#ffffff", .0001, 0, 10 * Math.PI / 180));
-				light4.position.set(-27,8,172);
-				light4.castShadow = true;
-				light4.onlyShadow = true;
-				light4.shadowDarkness = .2;
-				scene.add(light4);
-
-				makeBalloons(50);
-
-				createText("Happy Birthday", -5, -9.4, 3.65)
-				createText($scope.name+"!", -8.8, 4, 3);
-
-			}
-
-			function createWall(plane, name, xDegree, yDegree, zDegree, posX, posY, posZ, width, height, transparent, opacity){
-
-				var planeMaterial = Physijs.createMaterial(
+			// Wall Prototype
+			function Wall(name, xDegree, yDegree, zDegree, posX, posY, posZ, width, height, transparent, opacity){
+				this.planeMaterial = Physijs.createMaterial(
 				                    new THREE.MeshLambertMaterial({
 										color: 0x1ed2ed,
 										shininess: 1,
@@ -98,25 +40,180 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 									.7 // bounciness (aka. restitution)
 				                );
 
-				plane = new Physijs.BoxMesh(new THREE.BoxGeometry(width, .5, height),
-				            planeMaterial,
+				this.plane = new Physijs.BoxMesh(new THREE.BoxGeometry(width, .5, height),
+				            this.planeMaterial,
 							0 // mass (0 = immovable)
 						);
 
-				plane.rotation.x = xDegree * (Math.PI / 180); // convert to degrees from radians
-				plane.rotation.y = yDegree * (Math.PI / 180);
-				plane.rotation.z = zDegree * (Math.PI / 180);
+				this.plane.rotation.x = xDegree * (Math.PI / 180); // convert to degrees from radians
+				this.plane.rotation.y = yDegree * (Math.PI / 180);
+				this.plane.rotation.z = zDegree * (Math.PI / 180);
 
-				plane.position.x = posX;
-				plane.position.y = posY;
-				plane.position.z = posZ;
+				this.plane.position.x = posX;
+				this.plane.position.y = posY;
+				this.plane.position.z = posZ;
 
-				plane.name = name;
-				plane.receiveShadow = true;
+				this.plane.name = name;
+				this.plane.receiveShadow = true;
 
-				scene.add(plane);
+				scene.add(this.plane);
+			}
 
-				return plane;
+			// PointLight Prototype
+			function PointLight(intesity, posX, posY, posZ, shadow) {
+				this.light = new THREE.PointLight(new THREE.Color("#ffffff"), intesity);
+				this.light.position.set(posX,posY,posZ);
+				this.light.castShadow = shadow;
+				scene.add(this.light);
+			}
+
+			// SpotLight Prototype
+			function SpotLight(intensity, distance, radius, posX, posY, posZ, shadow, only, darkness) {
+				this.light = new THREE.SpotLight(new THREE.Color("#ffffff", intensity, distance, radius));
+				this.light.position.set(posX,posY,posZ);
+				this.light.castShadow = shadow;
+				this.light.onlyShadow = only;
+				this.light.shadowDarkness = darkness;
+				scene.add(this.light);
+			}
+
+			// Balloon Prototype
+			function Balloon(geometry, i) {
+
+				this.colour = colours[Math.floor(Math.random() * colours.length)];
+
+				this.material = Physijs.createMaterial(new THREE.MeshLambertMaterial({
+					color: this.colour,
+					transparent: true,
+					opacity: .85,
+					side: THREE.FrontSide
+				}), 1, 1);
+
+				this.balloon = new Physijs.BoxMesh(geometry, this.material);
+
+				var pos = ["yRand", "xRand", "zRand"];
+				for( var xyz = 0; xyz < 3; xyz++){
+					var posNeg = Math.random();
+					switch(xyz){
+						case 0:
+							if(posNeg > 0.5){
+								coords[pos[xyz]] = Math.random() * -1;
+							} else {
+								coords[pos[xyz]] = Math.random() * 3;
+							}
+						break;
+						case 1:
+							if(posNeg > 0.5){
+								coords[pos[xyz]] = Math.random() * -15;
+							} else {
+								coords[pos[xyz]] = Math.random() * 15;
+							}
+						break;
+						case 2:
+							if(posNeg > 0.5){
+								coords[pos[xyz]] = Math.random() * -4;
+							} else {
+								coords[pos[xyz]] = Math.random() * 4;
+							}
+						break;
+					}
+				}
+
+				this.balloon.position.y = coords.yRand-25;
+				this.balloon.position.x = coords.xRand;
+				this.balloon.position.z = coords.zRand+24;
+
+				this.balloon.name = "balloon"+i;
+				this.balloon.castShadow = true;
+				this.balloon.receiveShadow = true;
+
+				scene.add(this.balloon);
+
+			}
+
+			Balloon.prototype.applyForce = function() {
+				this.balloon.applyCentralImpulse(new THREE.Vector3(0,0,-250));
+			};
+
+			Balloon.prototype.randomSize = function() {
+				var rand = Math.random() * 2.3;
+				this.balloon.scale.set(rand,rand,rand);
+			}
+
+			function Confetti(){
+
+				this.material = Physijs.createMaterial(
+				                    new THREE.MeshLambertMaterial({
+										color: 0x1ed2ed,
+										shading: THREE.FlatShading,
+										side: THREE.FrontSide
+									}),
+									0.1, //friction
+									0.1 // bounciness (aka. restitution)
+				                );
+
+				this.confetti = new Physijs.BoxMesh(new THREE.BoxGeometry(.05, 0.01, 0.1),
+				            this.material
+						);
+
+				this.confetti.position.x = posX;
+				this.confetti.position.y = posY;
+				this.confetti.position.z = posZ;
+
+				this.confetti.castShadow = true;
+				this.confetti.receiveShadow = true;
+
+			}
+
+			function initScene(){
+
+				scene.setGravity(new THREE.Vector3(0,15,0));
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				stats.domElement.style.zIndex = 100;
+				document.getElementById($scope.roomId).appendChild( stats.domElement );
+
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				renderer.shadowMapEnabled = true;
+				renderer.shadowMapSoft = true;
+				document.getElementById($scope.roomId).appendChild(renderer.domElement);
+
+				camera = new THREE.PerspectiveCamera(
+				             50,
+				             window.innerWidth / window.innerHeight,
+				             29,
+				             60
+				             );
+				camera.setLens(55, 35);
+				camera.position.set(0,0,40);
+				scene.add(camera);
+
+				new Wall("back", 90, 0, 0, 0, 0, -10, 100, 100, false, 1);
+				new Wall("right", 90, 0, 90, 35, 0, 12.5, 45, 100, true, 0);
+				new Wall("left", 90, 0, 90, -35, 0, 12.5, 45, 100, true, 0);
+				// new Wall("ceiling", 0, 90, 0, 0, 10, 12.5, 45, 40, false, 1);
+				// new Wall("floor", 0, 90, 0, 0, -10, 12.5, 45, 100, false, 1);
+				new Wall("behind", 90, 0, 0, 0, 0, 10, 40, 30, true, 0);
+
+				light1 = new PointLight(1.2,138,134,107,false);
+				light2 = new SpotLight(.01, 25, 10 * Math.PI / 180,-110,-121,0, false, false,0.5);
+				light3 = new SpotLight(.01, 25, 10 * Math.PI / 180,-19.8,-35,20, false, false,0.5);
+				light4 = new SpotLight(.0001, 0, 10 * Math.PI / 180,-27,8,172,true, true,0.2);
+
+				makeBalloons(100);
+
+				var size1, size2;
+				if(windowHalfX > 465){ 
+					size1 = 4.5; 
+					size2 = 3;
+				} else {
+					size1 = size2 = 2.5;
+				} 
+				createText("Happy Birthday", 2.5, -9.4, size1)
+				createText($scope.name+"!", -2.5, -3, size2);
+
 			}
 
 			function makeBalloons(iterations){
@@ -126,55 +223,10 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 
 					for (var i = 0; i < iterations; i++) {
 						
-						var colour = colours[Math.floor(Math.random() * colours.length)];
-
-						var material = Physijs.createMaterial(new THREE.MeshLambertMaterial({
-							color: colour,
-							transparent: true,
-							opacity: .85,
-							side: THREE.FrontSide
-						}), 1, 1);
-
-						balloon = new Physijs.BoxMesh(geometry, material);
-
-						var pos = ["yRand", "xRand", "zRand"];
-						for( var xyz = 0; xyz < 3; xyz++){
-							var posNeg = Math.random();
-							switch(xyz){
-								case 0:
-									if(posNeg > 0.5){
-										coords[pos[xyz]] = Math.random() * -1;
-									} else {
-										coords[pos[xyz]] = Math.random() * 3;
-									}
-								break;
-								case 1:
-									if(posNeg > 0.5){
-										coords[pos[xyz]] = Math.random() * -15;
-									} else {
-										coords[pos[xyz]] = Math.random() * 15;
-									}
-								break;
-								case 2:
-									if(posNeg > 0.5){
-										coords[pos[xyz]] = Math.random() * -4;
-									} else {
-										coords[pos[xyz]] = Math.random() * 4;
-									}
-								break;
-							}
-						}
-
-						balloon.position.y = coords.yRand-9;
-						balloon.position.x = coords.xRand;
-						balloon.position.z = coords.zRand;
-
-						balloon.worldToLocal(new THREE.Vector3(0,10,-10));
-
-						balloon.name = "balloon"+i;
-						balloon.castShadow = true;
-
-						scene.add(balloon);
+						var balloon = new Balloon(geometry, i);
+						
+						balloon.randomSize();
+						balloon.applyForce();
 
 					};
 
@@ -230,39 +282,38 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 			}
 
 			function handleMouseMove(evt) {
-				mouseX = ( evt.clientX - windowHalfX ) / 75;
-				mouseY = ( evt.clientY - windowHalfY ) / 75;
+				mouseX = ( evt.clientX - windowHalfX ) / 80;
+				mouseY = ( evt.clientY - windowHalfY ) / 80;
 			}
 
 			function handleMouseDown( evt ) {
-				makeBalloons(15);
+				makeBalloons(20);
 			};
 
 			function render(){
 				scene.simulate();
 
-				camera.position.x += ( mouseX - camera.position.x ) * .05;
-				camera.position.y += ( - mouseY - camera.position.y ) * .05;
+				camera.position.x += ( mouseX - camera.position.x );
+				camera.position.y += ( - mouseY - camera.position.y );
 				camera.lookAt( scene.position );
 
 				renderer.render(scene, camera);
 				requestAnimationFrame(render);
 
-				// stats.update();
+				stats.update();
 			}
 
-			// function loadGUI(){
-			// 	var gui = new dat.GUI({
-			// 		height: 5 * 32 - 1
-			// 	});	
-			// 	gui.add(camera.position, 'x');
-			// 	gui.add(camera.position, 'y');
-			// 	gui.add(camera.position, 'z');
-			// 	gui.add(light1.position, 'x', -200, 200);
-			// 	gui.add(light1.position, 'y', -200, 200);
-			// 	gui.add(light1.position, 'z', -500, 500);
-			// }
-
+			function loadGUI(){
+				var gui = new dat.GUI({
+					height: 5 * 32 - 1
+				});	
+				gui.add(camera.position, 'x');
+				gui.add(camera.position, 'y');
+				gui.add(camera.position, 'z');
+				gui.add(light2.light.position, 'x', -200, 200);
+				gui.add(light2.light.position, 'y', -200, 200);
+				gui.add(light2.light.position, 'z', -500, 500);
+			}
 
 			initScene();
 			// loadGUI();
