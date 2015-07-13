@@ -202,7 +202,11 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 				light3 = new SpotLight(.01, 25, 10 * Math.PI / 180,-19.8,-35,20, false, false,0.5);
 				light4 = new SpotLight(.0001, 0, 10 * Math.PI / 180,-27,8,172,true, true,0.2);
 
-				makeBalloons(100);
+				var loader = new THREE.JSONLoader();
+				loader.load('mesh/simple_balloon.json', function(geometry, materials){
+					$scope.balloonGeo = geometry;
+					makeBalloons(100);
+				});
 
 				var size1, size2;
 				if(windowHalfX > 465){ 
@@ -217,21 +221,14 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 			}
 
 			function makeBalloons(iterations){
+				for (var i = 0; i < iterations; i++) {
+					
+					var balloon = new Balloon($scope.balloonGeo, i);
+					
+					balloon.randomSize();
+					balloon.applyForce();
 
-				var loader = new THREE.JSONLoader();
-				loader.load('mesh/simple_balloon.json', function(geometry, materials){
-
-					for (var i = 0; i < iterations; i++) {
-						
-						var balloon = new Balloon(geometry, i);
-						
-						balloon.randomSize();
-						balloon.applyForce();
-
-					};
-
-				});
-
+				};
 			}
 
 			function createText(text, txtY, txtZ, size) {
