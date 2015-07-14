@@ -140,40 +140,9 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 				this.balloon.scale.set(rand,rand,rand);
 			}
 
-			function Confetti(){
-
-				this.material = Physijs.createMaterial(
-				                    new THREE.MeshLambertMaterial({
-										color: 0x1ed2ed,
-										shading: THREE.FlatShading,
-										side: THREE.FrontSide
-									}),
-									0.1, //friction
-									0.1 // bounciness (aka. restitution)
-				                );
-
-				this.confetti = new Physijs.BoxMesh(new THREE.BoxGeometry(.05, 0.01, 0.1),
-				            this.material
-						);
-
-				this.confetti.position.x = posX;
-				this.confetti.position.y = posY;
-				this.confetti.position.z = posZ;
-
-				this.confetti.castShadow = true;
-				this.confetti.receiveShadow = true;
-
-			}
-
 			function initScene(){
 
 				scene.setGravity(new THREE.Vector3(0,15,0));
-
-				stats = new Stats();
-				stats.domElement.style.position = 'absolute';
-				stats.domElement.style.top = '0px';
-				stats.domElement.style.zIndex = 100;
-				document.getElementById($scope.roomId).appendChild( stats.domElement );
 
 				renderer.setSize(window.innerWidth, window.innerHeight);
 				renderer.shadowMapEnabled = true;
@@ -295,7 +264,6 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 				renderer.render(scene, camera);
 				requestAnimationFrame(render);
 
-				stats.update();
 			}
 
 			// function loadGUI(){

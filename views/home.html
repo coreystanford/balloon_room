@@ -1,7 +1,8 @@
 <div id="get-link" ng-show="input">
 
 	<input type="text" ng-model="name" placeholder="Who's birthday is it?">
-	<button type="button" ng-click="openModal()">Get the Link</button>
+	<a target="_blank" href="http://www.coreystanford.com/dev/balloons/#/{{ name }}" id="preview">Preview</a>
+	<a ng-click="openModal()" id="link">Link</a>
 
 </div>
 
@@ -11,7 +12,6 @@
 
 	<h3>http://www.coreystanford.com/dev/balloons/#/{{ name }}</h3>
 
-	<a target="_blank" href="http://www.coreystanford.com/dev/balloons/#/{{ name }}" id="preview">Preview</a>
 	<a type="button" ng-click="closeModal()" id="close">Close</a>
 	
 </div>
