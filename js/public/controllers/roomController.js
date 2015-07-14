@@ -2,4 +2,6 @@ balloonApp.controller('roomController', ['$scope', '$http', '$stateParams', func
 
   $scope.name = $stateParams.name;
 
+  console.log($scope.name);
+
 }]);

@@ -132,7 +132,7 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 			}
 
 			Balloon.prototype.applyForce = function() {
-				this.balloon.applyCentralImpulse(new THREE.Vector3(0,0,-250));
+				this.balloon.applyCentralImpulse(new THREE.Vector3(0,-20,-300));
 			};
 
 			Balloon.prototype.randomSize = function() {
@@ -183,8 +183,8 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 				camera = new THREE.PerspectiveCamera(
 				             50,
 				             window.innerWidth / window.innerHeight,
-				             29,
-				             60
+				             25,
+				             80
 				             );
 				camera.setLens(55, 35);
 				camera.position.set(0,0,40);
@@ -193,8 +193,6 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 				new Wall("back", 90, 0, 0, 0, 0, -10, 100, 100, false, 1);
 				new Wall("right", 90, 0, 90, 35, 0, 12.5, 45, 100, true, 0);
 				new Wall("left", 90, 0, 90, -35, 0, 12.5, 45, 100, true, 0);
-				// new Wall("ceiling", 0, 90, 0, 0, 10, 12.5, 45, 40, false, 1);
-				// new Wall("floor", 0, 90, 0, 0, -10, 12.5, 45, 100, false, 1);
 				new Wall("behind", 90, 0, 0, 0, 0, 10, 40, 30, true, 0);
 
 				light1 = new PointLight(1.2,138,134,107,false);
@@ -300,17 +298,17 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 				stats.update();
 			}
 
-			function loadGUI(){
-				var gui = new dat.GUI({
-					height: 5 * 32 - 1
-				});	
-				gui.add(camera.position, 'x');
-				gui.add(camera.position, 'y');
-				gui.add(camera.position, 'z');
-				gui.add(light2.light.position, 'x', -200, 200);
-				gui.add(light2.light.position, 'y', -200, 200);
-				gui.add(light2.light.position, 'z', -500, 500);
-			}
+			// function loadGUI(){
+			// 	var gui = new dat.GUI({
+			// 		height: 5 * 32 - 1
+			// 	});	
+			// 	gui.add(camera.position, 'x');
+			// 	gui.add(camera.position, 'y');
+			// 	gui.add(camera.position, 'z');
+			// 	gui.add(light2.light.position, 'x', -200, 200);
+			// 	gui.add(light2.light.position, 'y', -200, 200);
+			// 	gui.add(light2.light.position, 'z', -500, 500);
+			// }
 
 			initScene();
 			// loadGUI();

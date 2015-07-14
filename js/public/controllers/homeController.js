@@ -1,16 +1,13 @@
 balloonApp.controller('homeController', ['$scope', '$http', function($scope, $http) {
 
-	$scope.link = false;
+	$scope.input = true;
 
 	$scope.openModal = function(){
-		$scope.link = true;
+		$scope.input = false;
 	}
 
 	$scope.closeModal = function(){
-		$scope.link = false;
+		$scope.input = true;
 	}
-
-
-
 
 }]);

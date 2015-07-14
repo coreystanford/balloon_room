@@ -1,21 +1,17 @@
-<h1>Wish someone a Happy Birthday!</h1>
+<div id="get-link" ng-show="input">
 
-<h3>What's their first name?</h3>
+	<input type="text" ng-model="name" placeholder="Who's birthday is it?">
+	<button type="button" ng-click="openModal()">Get the Link</button>
 
-<input type="text" ng-model="name">
+</div>
 
-<button type="button" ng-click="openModal()">Get Link</button>
+<div id="background-container" make-background room-id="background-container" alt="Wish someone a happy birthday, with style"></div>
 
-<div ng-if="link" id="modal">
+<div ng-hide="input" id="modal">
+
+	<h3>http://www.coreystanford.com/dev/balloons/#/{{ name }}</h3>
+
+	<a target="_blank" href="http://www.coreystanford.com/dev/balloons/#/{{ name }}" id="preview">Preview</a>
+	<a type="button" ng-click="closeModal()" id="close">Close</a>
 	
-	<button type="button" ng-click="closeModal()">Close</button>
-
-	<h4>Here's the link:</h4>
-
-	<p>http://www.coreystanford.com/dev/balloons/#/{{ name }}</p>
-
-	<a ui-sref="room({name: name})">Preview</a>
-
-	<a>Copy</a>
-
 </div>

@@ -1,1 +1,1 @@
-var balloonApp = angular.module('balloonApp', ['ui.router']);
+var balloonApp = angular.module('balloonApp', ['ui.router', 'ngAnimate']);
