@@ -87,7 +87,7 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 					transparent: true,
 					opacity: .85,
 					side: THREE.FrontSide
-				}), 1, 1);
+				}), .5, 1);
 
 				this.balloon = new Physijs.BoxMesh(geometry, this.material);
 
@@ -119,7 +119,7 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 					}
 				}
 
-				this.balloon.position.y = coords.yRand-25;
+				this.balloon.position.y = coords.yRand-20;
 				this.balloon.position.x = coords.xRand;
 				this.balloon.position.z = coords.zRand+24;
 
@@ -132,7 +132,7 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 			}
 
 			Balloon.prototype.applyForce = function() {
-				this.balloon.applyCentralImpulse(new THREE.Vector3(0,-20,-300));
+				this.balloon.applyCentralImpulse(new THREE.Vector3(0,0,-300));
 			};
 
 			Balloon.prototype.randomSize = function() {
@@ -152,7 +152,7 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 				camera = new THREE.PerspectiveCamera(
 				             50,
 				             window.innerWidth / window.innerHeight,
-				             25,
+				             15,
 				             80
 				             );
 				camera.setLens(55, 35);
@@ -160,19 +160,16 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 				scene.add(camera);
 
 				new Wall("back", 90, 0, 0, 0, 0, -10, 100, 100, false, 1);
-				new Wall("right", 90, 0, 90, 35, 0, 12.5, 45, 100, true, 0);
-				new Wall("left", 90, 0, 90, -35, 0, 12.5, 45, 100, true, 0);
-				new Wall("behind", 90, 0, 0, 0, 0, 10, 40, 30, true, 0);
+				new Wall("behind", 90, 0, 0, 0, 0, 15, 40, 25, true, 0);
 
 				light1 = new PointLight(1.2,138,134,107,false);
-				light2 = new SpotLight(.01, 25, 10 * Math.PI / 180,-110,-121,0, false, false,0.5);
-				light3 = new SpotLight(.01, 25, 10 * Math.PI / 180,-19.8,-35,20, false, false,0.5);
+				light3 = new SpotLight(.01, 25, 10 * Math.PI / 180,-170,-83,75, false, false,0.5);
 				light4 = new SpotLight(.0001, 0, 10 * Math.PI / 180,-27,8,172,true, true,0.2);
 
 				var loader = new THREE.JSONLoader();
 				loader.load('mesh/simple_balloon.json', function(geometry, materials){
 					$scope.balloonGeo = geometry;
-					makeBalloons(100);
+					makeBalloons(60);
 				});
 
 				var size1, size2;
@@ -251,7 +248,7 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 			}
 
 			function handleMouseDown( evt ) {
-				makeBalloons(20);
+				makeBalloons(12);
 			};
 
 			function render(){
@@ -273,9 +270,9 @@ balloonApp.directive('makeRoom', ['$window', '$rootScope', function($window, $ro
 			// 	gui.add(camera.position, 'x');
 			// 	gui.add(camera.position, 'y');
 			// 	gui.add(camera.position, 'z');
-			// 	gui.add(light2.light.position, 'x', -200, 200);
-			// 	gui.add(light2.light.position, 'y', -200, 200);
-			// 	gui.add(light2.light.position, 'z', -500, 500);
+			// 	gui.add(light3.light.position, 'x', -200, 200);
+			// 	gui.add(light3.light.position, 'y', -200, 200);
+			// 	gui.add(light3.light.position, 'z', -500, 500);
 			// }
 
 			initScene();

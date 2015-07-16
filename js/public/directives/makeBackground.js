@@ -83,8 +83,7 @@ balloonApp.directive('makeBackground', ['$window', '$rootScope', function($windo
 				new Wall("back", 90, 0, 0, 0, 0, -10, 100, 100, false, 1);
 
 				light1 = new PointLight(1.2,138,134,107,false);
-				light2 = new SpotLight(.01, 25, 10 * Math.PI / 180,-110,-121,0, false, false,0.5);
-				light3 = new SpotLight(.01, 25, 10 * Math.PI / 180,-19.8,-35,20, false, false,0.5);
+				light3 = new SpotLight(.01, 25, 10 * Math.PI / 180,-170,-83,75, false, false,0.5);
 				light4 = new SpotLight(.0001, 0, 10 * Math.PI / 180,-27,8,172,true, true,0.2);
 
 				createText("A birthday is always", 7.5, -9, 1.5);
